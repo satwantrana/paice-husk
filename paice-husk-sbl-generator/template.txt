@@ -1,0 +1,39 @@
+booleans ( canContinue isIntact )
+
+routines (
+   check
+   rec
+)
+
+externals ( stem )
+
+groupings ( vowel )
+
+define vowel 'aeiou'
+
+backwardmode (
+
+	define check as(
+		
+		( ( (repeat gopast vowel) (not atmark limit) ) and (test hop 3) )
+		or
+		( ( (repeat gopast vowel) (atmark limit) ) and (test hop 2) )
+		
+	)
+
+	define rec as(
+		canContinue and 
+		(
+			//Place generated code here
+		)
+	)
+)
+define stem as (
+
+    set canContinue
+    set isIntact
+
+    backwards (
+        repeat rec
+    )
+)
