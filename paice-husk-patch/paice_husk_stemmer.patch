@@ -1,0 +1,330 @@
+From def8d5d6a08961b48da6cee0c1f2ffec70bb6ed4 Mon Sep 17 00:00:00 2001
+From: Satwant Rana <sat8003wantrana@gmail.com>
+Date: Tue, 1 Apr 2014 01:42:26 -0700
+Subject: [PATCH] Paice Husk stemmer added
+
+---
+ xapian-core/include/xapian/stem.h   |   1 +
+ xapian-core/languages/Makefile.mk   |   1 +
+ xapian-core/languages/paicehusk.sbl | 270 ++++++++++++++++++++++++++++++++++++
+ xapian-core/languages/stem.cc       |   3 +
+ 4 files changed, 275 insertions(+)
+ create mode 100644 xapian-core/languages/paicehusk.sbl
+
+diff --git a/xapian-core/include/xapian/stem.h b/xapian-core/include/xapian/stem.h
+index bbfdc0b..d0caea4 100644
+--- a/xapian-core/include/xapian/stem.h
++++ b/xapian-core/include/xapian/stem.h
+@@ -92,6 +92,7 @@ class XAPIAN_VISIBILITY_DEFAULT Stem {
+      *  - italian (it)
+      *  - kraaij_pohlmann - A different Dutch stemmer
+      *  - norwegian (nb, nn, no)
++     *  - paice-husk (en)
+      *  - portuguese (pt)
+      *  - romanian (ro)
+      *  - russian (ru)
+diff --git a/xapian-core/languages/Makefile.mk b/xapian-core/languages/Makefile.mk
+index d08a962..6f82661 100644
+--- a/xapian-core/languages/Makefile.mk
++++ b/xapian-core/languages/Makefile.mk
+@@ -24,6 +24,7 @@ snowball_algorithms =\
+ 	languages/kraaij_pohlmann.sbl\
+ 	languages/lovins.sbl\
+ 	languages/norwegian.sbl\
++	languages/paicehusk.sbl\
+ 	languages/porter.sbl\
+ 	languages/portuguese.sbl\
+ 	languages/romanian.sbl\
+diff --git a/xapian-core/languages/paicehusk.sbl b/xapian-core/languages/paicehusk.sbl
+new file mode 100644
+index 0000000..1d5cb08
+--- /dev/null
++++ b/xapian-core/languages/paicehusk.sbl
+@@ -0,0 +1,270 @@
++// Alias:
++booleans ( canContinue isIntact )
++
++routines (
++   check
++   rec
++)
++
++externals ( stem )
++
++groupings ( vowel )
++
++define vowel 'aeiou'
++
++backwardmode (
++
++	define check as(
++		
++		( ( (repeat gopast vowel) (not atmark limit) ) and (test hop 3) )
++		or
++		( ( (repeat gopast vowel) (atmark limit) ) and (test hop 2) )
++		
++	)
++
++	define rec as(
++		canContinue and 
++		(
++		( ( 'ia' (test check) ) and ( (isIntact) (unset isIntact) (['ia'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'a' (test check) ) and ( (isIntact) (unset isIntact) (['a'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'bb' (test check) ) and (  (unset isIntact) (['b'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ytic' (test check) ) and (  (unset isIntact) (['tic'] delete) (insert 's' ) (unset canContinue) ) )
++		or
++		( ( 'ic' (test check) ) and (  (unset isIntact) (['ic'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'nc' (test check) ) and (  (unset isIntact) (['c'] delete) (insert 't' ) (set canContinue) ) )
++		or
++		( ( 'dd' (test check) ) and (  (unset isIntact) (['d'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ied' (test check) ) and (  (unset isIntact) (['ied'] delete) (insert 'y' ) (set canContinue) ) )
++		or
++		( ( 'ceed' (test check) ) and (  (unset isIntact) (['ed'] delete) (insert 'ss' ) (unset canContinue) ) )
++		or
++		( ( 'eed' (test check) ) and (  (unset isIntact) (['d'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ed' (test check) ) and (  (unset isIntact) (['ed'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'hood' (test check) ) and (  (unset isIntact) (['hood'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'e' (test check) ) and (  (unset isIntact) (['e'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'lief' (test check) ) and (  (unset isIntact) (['f'] delete) (insert 'v' ) (unset canContinue) ) )
++		or
++		( ( 'if' (test check) ) and (  (unset isIntact) (['if'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ing' (test check) ) and (  (unset isIntact) (['ing'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'iag' (test check) ) and (  (unset isIntact) (['iag'] delete) (insert 'y' ) (unset canContinue) ) )
++		or
++		( ( 'ag' (test check) ) and (  (unset isIntact) (['ag'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'gg' (test check) ) and (  (unset isIntact) (['g'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'th' (test check) ) and ( (isIntact) (unset isIntact) (['th'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'guish' (test check) ) and (  (unset isIntact) (['guish'] delete) (insert 'ct' ) (unset canContinue) ) )
++		or
++		( ( 'ish' (test check) ) and (  (unset isIntact) (['ish'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'i' (test check) ) and ( (isIntact) (unset isIntact) (['i'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'i' (test check) ) and (  (unset isIntact) (['i'] delete) (insert 'y' ) (set canContinue) ) )
++		or
++		( ( 'ij' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 'd' ) (unset canContinue) ) )
++		or
++		( ( 'fuj' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 's' ) (unset canContinue) ) )
++		or
++		( ( 'uj' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 'd' ) (unset canContinue) ) )
++		or
++		( ( 'oj' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 'd' ) (unset canContinue) ) )
++		or
++		( ( 'hej' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 'r' ) (unset canContinue) ) )
++		or
++		( ( 'verj' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 't' ) (unset canContinue) ) )
++		or
++		( ( 'misj' (test check) ) and (  (unset isIntact) (['sj'] delete) (insert 't' ) (unset canContinue) ) )
++		or
++		( ( 'nj' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 'd' ) (unset canContinue) ) )
++		or
++		( ( 'j' (test check) ) and (  (unset isIntact) (['j'] delete) (insert 's' ) (unset canContinue) ) )
++		or
++		( ( 'ifiabl' (test check) ) and (  (unset isIntact) (['ifiabl'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'iabl' (test check) ) and (  (unset isIntact) (['iabl'] delete) (insert 'y' ) (unset canContinue) ) )
++		or
++		( ( 'abl' (test check) ) and (  (unset isIntact) (['abl'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ibl' (test check) ) and (  (unset isIntact) (['ibl'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'bil' (test check) ) and (  (unset isIntact) (['il'] delete) (insert 'l' ) (set canContinue) ) )
++		or
++		( ( 'cl' (test check) ) and (  (unset isIntact) (['l'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'iful' (test check) ) and (  (unset isIntact) (['iful'] delete) (insert 'y' ) (unset canContinue) ) )
++		or
++		( ( 'ful' (test check) ) and (  (unset isIntact) (['ful'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ul' (test check) ) and (  (unset isIntact) (['ul'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ial' (test check) ) and (  (unset isIntact) (['ial'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ual' (test check) ) and (  (unset isIntact) (['ual'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'al' (test check) ) and (  (unset isIntact) (['al'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'll' (test check) ) and (  (unset isIntact) (['l'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ium' (test check) ) and (  (unset isIntact) (['ium'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'um' (test check) ) and ( (isIntact) (unset isIntact) (['um'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ism' (test check) ) and (  (unset isIntact) (['ism'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'mm' (test check) ) and (  (unset isIntact) (['m'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'sion' (test check) ) and (  (unset isIntact) (['sion'] delete) (insert 'j' ) (set canContinue) ) )
++		or
++		( ( 'xion' (test check) ) and (  (unset isIntact) (['xion'] delete) (insert 'ct' ) (unset canContinue) ) )
++		or
++		( ( 'ion' (test check) ) and (  (unset isIntact) (['ion'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ian' (test check) ) and (  (unset isIntact) (['ian'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'an' (test check) ) and (  (unset isIntact) (['an'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'een' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'en' (test check) ) and (  (unset isIntact) (['en'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'nn' (test check) ) and (  (unset isIntact) (['n'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ship' (test check) ) and (  (unset isIntact) (['ship'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'pp' (test check) ) and (  (unset isIntact) (['p'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'er' (test check) ) and (  (unset isIntact) (['er'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ear' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ar' (test check) ) and (  (unset isIntact) (['ar'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'or' (test check) ) and (  (unset isIntact) (['or'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ur' (test check) ) and (  (unset isIntact) (['ur'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'rr' (test check) ) and (  (unset isIntact) (['r'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'tr' (test check) ) and (  (unset isIntact) (['r'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ier' (test check) ) and (  (unset isIntact) (['ier'] delete) (insert 'y' ) (set canContinue) ) )
++		or
++		( ( 'ies' (test check) ) and (  (unset isIntact) (['ies'] delete) (insert 'y' ) (set canContinue) ) )
++		or
++		( ( 'sis' (test check) ) and (  (unset isIntact) (['is'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'is' (test check) ) and (  (unset isIntact) (['is'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ness' (test check) ) and (  (unset isIntact) (['ness'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ss' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ous' (test check) ) and (  (unset isIntact) (['ous'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'us' (test check) ) and ( (isIntact) (unset isIntact) (['us'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 's' (test check) ) and ( (isIntact) (unset isIntact) (['s'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 's' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'plicat' (test check) ) and (  (unset isIntact) (['icat'] delete) (insert 'y' ) (unset canContinue) ) )
++		or
++		( ( 'at' (test check) ) and (  (unset isIntact) (['at'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ment' (test check) ) and (  (unset isIntact) (['ment'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ent' (test check) ) and (  (unset isIntact) (['ent'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ant' (test check) ) and (  (unset isIntact) (['ant'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ript' (test check) ) and (  (unset isIntact) (['pt'] delete) (insert 'b' ) (unset canContinue) ) )
++		or
++		( ( 'orpt' (test check) ) and (  (unset isIntact) (['pt'] delete) (insert 'b' ) (unset canContinue) ) )
++		or
++		( ( 'duct' (test check) ) and (  (unset isIntact) (['t'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'sumpt' (test check) ) and (  (unset isIntact) (['pt'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'cept' (test check) ) and (  (unset isIntact) (['pt'] delete) (insert 'iv' ) (unset canContinue) ) )
++		or
++		( ( 'olut' (test check) ) and (  (unset isIntact) (['ut'] delete) (insert 'v' ) (unset canContinue) ) )
++		or
++		( ( 'sist' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ist' (test check) ) and (  (unset isIntact) (['ist'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'tt' (test check) ) and (  (unset isIntact) (['t'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'iqu' (test check) ) and (  (unset isIntact) (['iqu'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ogu' (test check) ) and (  (unset isIntact) (['u'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'siv' (test check) ) and (  (unset isIntact) (['siv'] delete) (insert 'j' ) (set canContinue) ) )
++		or
++		( ( 'eiv' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'iv' (test check) ) and (  (unset isIntact) (['iv'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'bly' (test check) ) and (  (unset isIntact) (['y'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ily' (test check) ) and (  (unset isIntact) (['ily'] delete) (insert 'y' ) (set canContinue) ) )
++		or
++		( ( 'ply' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ly' (test check) ) and (  (unset isIntact) (['ly'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ogy' (test check) ) and (  (unset isIntact) (['y'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'phy' (test check) ) and (  (unset isIntact) (['y'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'omy' (test check) ) and (  (unset isIntact) (['y'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'opy' (test check) ) and (  (unset isIntact) (['y'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ity' (test check) ) and (  (unset isIntact) (['ity'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ety' (test check) ) and (  (unset isIntact) (['ety'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'lty' (test check) ) and (  (unset isIntact) (['ty'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'istry' (test check) ) and (  (unset isIntact) (['istry'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ary' (test check) ) and (  (unset isIntact) (['ary'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ory' (test check) ) and (  (unset isIntact) (['ory'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'ify' (test check) ) and (  (unset isIntact) (['ify'] delete) (insert '' ) (unset canContinue) ) )
++		or
++		( ( 'ncy' (test check) ) and (  (unset isIntact) (['cy'] delete) (insert 't' ) (set canContinue) ) )
++		or
++		( ( 'acy' (test check) ) and (  (unset isIntact) (['acy'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'iz' (test check) ) and (  (unset isIntact) (['iz'] delete) (insert '' ) (set canContinue) ) )
++		or
++		( ( 'yz' (test check) ) and (  (unset isIntact) (['z'] delete) (insert 's' ) (unset canContinue) ) )
++		or
++		( ( 'dne' (test check) ) and (  (unset isIntact) ([''] delete) (insert '' ) (unset canContinue) ) )
++		)
++	)
++)
++define stem as (
++
++    set canContinue
++    set isIntact
++
++    backwards (
++        repeat rec
++    )
++)
+diff --git a/xapian-core/languages/stem.cc b/xapian-core/languages/stem.cc
+index 4ff8365..cf039af 100644
+--- a/xapian-core/languages/stem.cc
++++ b/xapian-core/languages/stem.cc
+@@ -102,6 +102,9 @@ Stem::Stem(const std::string &language) : internal(0) {
+ 		return;
+ 	    case NONE:
+ 		return;
++		case PAICEHUSK:
++		internal = new InternalStemPaicehusk;
++		return;
+ 	    case PORTUGUESE:
+ 		internal = new InternalStemPortuguese;
+ 		return;
+-- 
+1.8.3.2
+
