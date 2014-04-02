@@ -1,1 +1,1 @@
-Paice Husk stemmer for xapian, part of a Bite size project for GSoC.
+Paice Husk stemmer for xapian, a Bite size project for GSoC.
